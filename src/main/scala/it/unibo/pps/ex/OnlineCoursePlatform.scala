@@ -149,7 +149,10 @@ object OnlineCoursePlatform:
      * @param courseId  The ID of the course to enroll in.
      *                  Fails silently if the course doesn't exist.
      */
-    override def enrollStudent(studentId: String, courseId: String): Unit = ???
+    override def enrollStudent(studentId: String, courseId: String): Unit =
+      if courses.exists(c => c.courseId.equals(courseId)) then
+        val p = (studentId,courses.filter(c => c.courseId.equals(courseId)).head)
+        enrollments = (p :: enrollments)
 
     /**
      * Unenrolls a student from a specific course.
@@ -157,7 +160,10 @@ object OnlineCoursePlatform:
      * @param studentId The ID of the student.
      * @param courseId  The ID of the course to unenroll from.
      */
-    override def unenrollStudent(studentId: String, courseId: String): Unit = ???
+    override def unenrollStudent(studentId: String, courseId: String): Unit =
+      val p = (studentId, courses.filter(c => c.courseId.equals(courseId)).head)
+      enrollments = enrollments.filter(x => !x.equals(p))
+
 
     /**
      * Retrieves all courses a specific student is enrolled in.
@@ -165,7 +171,8 @@ object OnlineCoursePlatform:
      * @param studentId The ID of the student.
      * @return A sequence of courses the student is enrolled in.
      */
-    override def getStudentEnrollments(studentId: String): Sequence[Course] = ???
+    override def getStudentEnrollments(studentId: String): Sequence[Course] =
+      Sequence(enrollments.filter((s,c) => s.equals(studentId)).map((s,c) => c)*)
 
     /**
      * Checks if a student is enrolled in a specific course.
@@ -174,8 +181,10 @@ object OnlineCoursePlatform:
      * @param courseId  The ID of the course.
      * @return true if the student is enrolled, false otherwise.
      */
-    override def isStudentEnrolled(studentId: String, courseId: String): Boolean = ???
-
+    override def isStudentEnrolled(studentId: String, courseId: String): Boolean = {
+      val c = enrollments.filter((s,c) => c.courseId.equals(courseId)).head
+      enrollments.contains((studentId,c))
+    }
 
 
 /**
