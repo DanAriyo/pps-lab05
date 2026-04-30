@@ -2,6 +2,7 @@ package it.unibo.pps.ex
 
 import it.unibo.pps.util.Optionals.Optional
 import it.unibo.pps.util.Optionals.Optional.Just
+import it.unibo.pps.util.Optionals.Optional.Empty
 import it.unibo.pps.util.Sequences.* // Assuming Sequence and related methods are here
 
 // Represents a course offered on the platform
@@ -103,7 +104,7 @@ object OnlineCoursePlatform:
      * @param course The course to add.
      */
     override def addCourse(course: Course): Unit =
-      courses += course
+      courses = courses + course
 
     /**
      * Finds courses belonging to a specific category.
@@ -121,7 +122,10 @@ object OnlineCoursePlatform:
      * @return An Optional containing the course if found, otherwise Optional.empty.
      */
     override def getCourse(courseId: String): Optional[Course] =
-      Just(courses.filter(c => c.courseId.equals(courseId)).head)
+      courses.find(_.courseId == courseId) match
+        case Some(course) => Just(course)
+        case None         => Empty()
+
 
     /**
      * Removes a course from the platform's catalog.
@@ -130,7 +134,7 @@ object OnlineCoursePlatform:
      * @param course The course to remove.
      */
     override def removeCourse(course: Course): Unit =
-      courses = courses.-(course)
+      courses = courses - course
 
     /**
      * Checks if a course with the given ID exists in the catalog.
@@ -139,7 +143,7 @@ object OnlineCoursePlatform:
      * @return true if the course exists, false otherwise.
      */
     override def isCourseAvailable(courseId: String): Boolean =
-      courses.exists(c => c.equals(courseId))
+      courses.exists(_.courseId.equals(courseId))
 
     /**
      * Enrolls a student in a specific course.
@@ -181,10 +185,10 @@ object OnlineCoursePlatform:
      * @param courseId  The ID of the course.
      * @return true if the student is enrolled, false otherwise.
      */
-    override def isStudentEnrolled(studentId: String, courseId: String): Boolean = {
-      val c = enrollments.filter((s,c) => c.courseId.equals(courseId)).head
-      enrollments.contains((studentId,c))
-    }
+    override def isStudentEnrolled(studentId: String, courseId: String): Boolean =
+      enrollments.exists { case (sId, course) =>
+        sId == studentId && course.courseId == courseId
+      }
 
 
 /**
